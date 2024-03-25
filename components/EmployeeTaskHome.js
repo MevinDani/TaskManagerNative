@@ -41,23 +41,6 @@ const EmployeeTaskHome = () => {
         setPriorityLevel(option)
     }
 
-    // const [date, setDate] = useState(dayjs());
-
-    const [chosenDate, setChosenDate] = useState(new Date());
-
-    // const [showDatePicker, setShowDatePicker] = useState(false);
-
-    const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || chosenDate;
-        setShowDatePicker(Platform.OS === 'android');
-        setChosenDate(currentDate);
-    };
-
-    const showDatepicker = () => {
-        setShowDatePicker(!showDatePicker);
-    };
-
-
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -73,6 +56,10 @@ const EmployeeTaskHome = () => {
 
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+    const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
+
+    const [date, setDate] = useState('')
+    const [time, setTime] = useState('')
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -82,9 +69,31 @@ const EmployeeTaskHome = () => {
         setDatePickerVisibility(false);
     };
 
-    const handleConfirm = (date) => {
+    const handleDateConfirm = (date) => {
         console.warn("A date has been picked: ", date);
+        const dt = new Date(date)
+        const x = dt.toISOString().split('T')
+        const x1 = x[0].split('-')
+        console.log(x1[2] + '/' + x1[1] + '/' + x1[0])
+        setDate(x1[2] + '/' + x1[1] + '/' + x1[0])
         hideDatePicker();
+    };
+
+    const showTimePicker = () => {
+        setTimePickerVisibility(true);
+    };
+
+    const hideTimePicker = () => {
+        setTimePickerVisibility(false);
+    };
+
+    const handleTimeConfirm = (time) => {
+        console.warn("A time has been picked: ", time);
+        const tm = new Date(time)
+        const x = tm.toLocaleTimeString()
+        console.log(x)
+        setTime(x)
+        hideTimePicker();
     };
 
     const getPriorityColor = priority => {
@@ -105,7 +114,8 @@ const EmployeeTaskHome = () => {
     };
 
     // console.log(taskList)
-    // console.log(date)
+    console.log(date, 'date')
+    console.log(time, 'time')
     return (
         <SafeAreaView style={styles.container}>
 
@@ -173,7 +183,7 @@ const EmployeeTaskHome = () => {
                             {/* Table Data */}
                             {
                                 taskList?.map((task, index) => (
-                                    <View style={styles.tableRow}>
+                                    <View style={styles.tableRow} key={index}>
                                         <Text style={styles.dataCell}>{task.task_name}</Text>
                                         <Text style={styles.dataCell}>{task.task_description}</Text>
                                         <Text style={styles.dataCell}>{task.task_scheduledon}</Text>
@@ -321,13 +331,20 @@ const EmployeeTaskHome = () => {
                                     )}
                                 </View> */}
 
-                                <View style={{ width: '85%' }}>
-                                    <Button title="Show Date Picker" onPress={showDatePicker} />
+                                <View style={{ width: '98%', justifyContent: 'space-between', flexDirection: "row" }}>
+                                    <Button title="Date Picker" onPress={showDatePicker} />
+                                    <Button title="Time Picker" onPress={showTimePicker} />
                                     <DateTimePickerModal
                                         isVisible={isDatePickerVisible}
                                         mode="date"
-                                        onConfirm={handleConfirm}
+                                        onConfirm={handleDateConfirm}
                                         onCancel={hideDatePicker}
+                                    />
+                                    <DateTimePickerModal
+                                        isVisible={isTimePickerVisible}
+                                        mode="time"
+                                        onConfirm={handleTimeConfirm}
+                                        onCancel={hideTimePicker}
                                     />
                                 </View>
 
@@ -437,6 +454,8 @@ const EmployeeTaskHome = () => {
                                 justifyContent: 'flex-end',
                                 flexDirection: "row",
                                 width: '100%',
+                                borderTopColor: 'black',
+                                borderTopWidth: 1
                                 // backgroundColor: 'black'
                             }}>
 
