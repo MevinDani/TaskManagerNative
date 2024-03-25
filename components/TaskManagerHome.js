@@ -128,7 +128,8 @@ const TaskManagerHome = () => {
 const styles = StyleSheet.create({
     TaskMangerWrapper: {
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        backgroundColor: "#F1F1FB",
     },
     TaskManHomeHead: {
         width: '100%',

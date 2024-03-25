@@ -7,5 +7,7 @@ import App from './App';
 import Form from './Form'
 import { name as appName } from './app.json';
 import TaskManagerHome from './components/TaskManagerHome';
+import TaskDetails from './components/TaskDetails';
+import Login from './components/Login';
 
-AppRegistry.registerComponent(appName, () => TaskManagerHome);
+AppRegistry.registerComponent(appName, () => Login);
