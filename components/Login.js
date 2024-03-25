@@ -34,66 +34,68 @@ const Login = () => {
     };
 
     return (
-        <LinearGradient
-            colors={['#98b2e5', 'rgba(10, 184, 149, 0.057)']}
-            start={{ x: 1, y: 1 }}
-            end={{ x: 0, y: 0 }}
-            style={styles.container}
-        >
-            <View style={styles.LoginWrapper}>
+        <SafeAreaView style={styles.container}>
+            <LinearGradient
+                colors={['#98b2e5', 'rgba(10, 184, 149, 0.057)']}
+                start={{ x: 1, y: 1 }}
+                end={{ x: 0, y: 0 }}
+                style={styles.container}
+            >
+                <View style={styles.LoginWrapper}>
 
-                {/* cloudImg */}
-                <View>
-                    <Image source={cloud}></Image>
-                </View>
+                    {/* cloudImg */}
+                    <View>
+                        <Image source={cloud}></Image>
+                    </View>
 
-                <View style={{
-                    justifyContent: 'flex-start',
-                    width: "100%"
-                }}>
-                    <View
-                        style={{
-                            width: "44%",
-                            backgroundColor: "white",
-                            marginLeft: 28,
-                            padding: 8,
-                            borderRadius: 4,
-                        }}
-                    >
-                        <Image source={cbxLogo} style={styles.cbxLogo}></Image>
+                    <View style={{
+                        justifyContent: 'flex-start',
+                        width: "100%"
+                    }}>
+                        <View
+                            style={{
+                                width: "44%",
+                                backgroundColor: "white",
+                                marginLeft: 28,
+                                padding: 8,
+                                borderRadius: 4,
+                            }}
+                        >
+                            <Image source={cbxLogo} style={styles.cbxLogo}></Image>
+                        </View>
+                    </View>
+
+                    {/* login form */}
+                    <View style={styles.Logincontainer}>
+                        <Text style={styles.label}>UserId</Text>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.input}
+                                onChangeText={text => setUserId(text)}
+                                value={userId}
+                            />
+                        </View>
+                        <Text style={styles.label}>Password</Text>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.input}
+                                secureTextEntry={true}
+                                onChangeText={text => setPassword(text)}
+                                value={password}
+                            />
+                        </View>
+                        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                            <Text style={styles.buttonText}>Login</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* bottomImg */}
+                    <View>
+                        <Image source={footerBg}></Image>
                     </View>
                 </View>
-
-                {/* login form */}
-                <View style={styles.Logincontainer}>
-                    <Text style={styles.label}>UserId</Text>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={text => setUserId(text)}
-                            value={userId}
-                        />
-                    </View>
-                    <Text style={styles.label}>Password</Text>
-                    <View style={styles.inputContainer}>
-                        <TextInput
-                            style={styles.input}
-                            secureTextEntry={true}
-                            onChangeText={text => setPassword(text)}
-                            value={password}
-                        />
-                    </View>
-                    <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                        <Text style={styles.buttonText}>Login</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* bottomImg */}
-                <View>
-                    <Image source={footerBg}></Image>
-                </View>
-            </View>
-        </LinearGradient>
+            </LinearGradient>
+        </SafeAreaView>
     )
 }
 
