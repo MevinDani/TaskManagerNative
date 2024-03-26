@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { Image, ImageBackground, SafeAreaView, StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal, TextInput, Button } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import ToastManager, { Toast } from 'toastify-react-native'
+
 
 
 // import DateTimePicker from 'react-native-ui-datepicker';
@@ -41,18 +43,32 @@ const EmployeeTaskHome = () => {
         setPriorityLevel(option)
     }
 
+    const fetchData = async () => {
+        try {
+            const response = await axios.get('https://cubixweberp.com:156/api/CRMTaskMainList/CPAYS/all/-/-/-/-/-/2024-01-10/2024-03-28/-');
+            setTaskList(response.data);
+            console.log('fetchData')
+        } catch (error) {
+            console.log(error, 'getTaskListError')
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('https://cubixweberp.com:156/api/CRMTaskMainList/CPAYS/all/-/-/-/-/-/2024-01-10/2024-03-28/-');
-                setTaskList(response.data);
-            } catch (error) {
-                console.log(error, 'getTaskListError')
-            }
-        };
 
         fetchData();
     }, [])
+
+    const showTaskSaveToast = () => {
+        Toast.success('Task Added Successfully')
+    }
+
+    const showEmptyTaskFields = () => {
+        Toast.error('Form is not filled!')
+    }
+
+    const ErrorAddTask = () => {
+        Toast.error('Some Error Occured')
+    }
 
 
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -60,6 +76,8 @@ const EmployeeTaskHome = () => {
 
     const [date, setDate] = useState('')
     const [time, setTime] = useState('')
+
+    const [combinedDateTime, setCombinedDateTime] = useState('')
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -71,11 +89,16 @@ const EmployeeTaskHome = () => {
 
     const handleDateConfirm = (date) => {
         console.warn("A date has been picked: ", date);
-        const dt = new Date(date)
-        const x = dt.toISOString().split('T')
-        const x1 = x[0].split('-')
-        console.log(x1[2] + '/' + x1[1] + '/' + x1[0])
-        setDate(x1[2] + '/' + x1[1] + '/' + x1[0])
+
+        // Extract date part
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        // Formatted date in yyyy-MM-dd format
+        const formattedDate = `${year}-${month}-${day}`;
+
+        setDate(formattedDate);
         hideDatePicker();
     };
 
@@ -89,12 +112,47 @@ const EmployeeTaskHome = () => {
 
     const handleTimeConfirm = (time) => {
         console.warn("A time has been picked: ", time);
-        const tm = new Date(time)
-        const x = tm.toLocaleTimeString()
-        console.log(x)
-        setTime(x)
+
+        // Extract time part
+        const hours = String(time.getHours()).padStart(2, '0');
+        const minutes = String(time.getMinutes()).padStart(2, '0');
+        const seconds = String(time.getSeconds()).padStart(2, '0');
+
+        // Formatted time in HH:mm:ss format
+        const formattedTime = `${hours}:${minutes}:${seconds}`;
+
+        setTime(formattedTime);
         hideTimePicker();
     };
+
+    // Combine date and time into a single Date object
+    const combineDateTime = () => {
+        // Get date object from formatted date string
+        const dateParts = date.split('-');
+        const year = parseInt(dateParts[0]);
+        const month = parseInt(dateParts[1]) - 1; // Month is zero-based
+        const day = parseInt(dateParts[2]);
+
+        // Get time object from formatted time string
+        const timeParts = time.split(':');
+        const hours = parseInt(timeParts[0]);
+        const minutes = parseInt(timeParts[1]);
+        const seconds = parseInt(timeParts[2]);
+
+        // Create combined Date object
+        const combinedDateTime = new Date(year, month, day, hours, minutes, seconds);
+
+        setCombinedDateTime(combinedDateTime)
+
+        // Use combinedDateTime as needed
+        console.log("Combined DateTime:", combinedDateTime);
+    };
+
+    useEffect(() => {
+        if (date && time) {
+            combineDateTime()
+        }
+    }, [date, time])
 
     const getPriorityColor = priority => {
         switch (priority.toLowerCase()) {
@@ -113,13 +171,100 @@ const EmployeeTaskHome = () => {
         return priority === 'High' || priority === 'Low' ? '#FFFFFF' : '#000000'; // White for High and Low, black for others
     };
 
+    const getCurrentDateTime = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const saveTask = async () => {
+        if (taskname !== '' && taskDescription !== '' && includeTravel !== null && priorityLevel !== null && taskComesUnder !== null && taskType !== null) {
+            console.log('field is filled')
+            try {
+
+                const createdOn = getCurrentDateTime();
+
+                const response = await axios.post('https://cubixweberp.com:156/api/CRMTaskMain', [
+                    {
+                        "cmpcode": "CPAYS",
+                        "mode": "ENTRY",
+                        "task_id": "DE9ECBC2-F1DF-40F1-BC67-4BD3087978BD",
+                        "task_name": taskname,
+                        "task_description": taskDescription,
+                        "include_travel": includeTravel,
+                        "job_code": "",
+                        "priority": priorityLevel,
+                        "task_scheduledon": combinedDateTime,
+                        "task_owner_id": "AJMAL",
+                        "task_ownder_name": "AJMAL",
+                        "task_ownder_dept": "",
+                        "task_comes_under": taskComesUnder,
+                        "task_type": "Inhouse",
+                        "latest_status": "",
+                        "latest_status_code": "",
+                        "latest_stage": "",
+                        "latest_stage_code": "",
+                        "created_on": createdOn,
+                        "task_creator_name": "AJMAL",
+                        "task_creator_id": "AJMAL"
+                    }
+                ]);
+
+                // Assuming a successful response has status code 200
+                if (response.status === 200) {
+                    showTaskSaveToast()
+                    fetchData()
+                    // Task saved successfully, handle any further actions here
+                    console.log('Task saved successfully');
+                    console.log(response.data)
+                    // setModalVisible(false)
+                } else {
+                    // Handle other status codes if needed
+                    console.error('Failed to save task:', response.statusText);
+                    console.log(response)
+                    setModalVisible(false)
+                }
+                setModalVisible(false)
+            } catch (error) {
+                // Handle network errors or other issues
+                console.error('Error while saving task:', error);
+                ErrorAddTask()
+            }
+
+        } else {
+            console.log('field is empty')
+            showEmptyTaskFields()
+        }
+    };
+
+    useEffect(() => {
+        if (modalVisible === false) {
+            setTaskName('')
+            setTaskDescription('')
+            setTaskComesUnder(null)
+            setTaskType(null)
+            setIncludeTravel(null)
+            setPriorityLevel(null)
+            setCombinedDateTime('')
+        }
+    }, [modalVisible])
+
+
     // console.log(taskList)
-    console.log(date, 'date')
-    console.log(time, 'time')
+    // console.log(date, 'date')
+    // console.log(time, 'time')
     return (
         <SafeAreaView style={styles.container}>
+            <ToastManager />
 
             <View style={styles.TaskHomeWrapper}>
+
 
                 {/* HeaderNav */}
                 <View style={styles.THHeaderNav}>
@@ -208,6 +353,7 @@ const EmployeeTaskHome = () => {
                     onRequestClose={() => setModalVisible(false)}
                 >
                     <View style={styles.modalContainer}>
+                        <ToastManager />
                         <View style={styles.modalContent}>
                             <Text style={{
                                 fontSize: 20,
@@ -350,6 +496,19 @@ const EmployeeTaskHome = () => {
 
                             </View>
 
+                            {
+                                combinedDateTime !== '' &&
+                                <View style={{
+                                    backgroundColor: 'green',
+                                    padding: 8,
+                                    borderRadius: 4
+                                }}>
+                                    <Text style={{ color: 'white' }}>{combinedDateTime ? combinedDateTime.toLocaleString() : ''}</Text>
+                                </View>
+                            }
+
+
+
                             <View style={{
                                 textAlign: 'left',
                                 width: '100%'
@@ -367,9 +526,9 @@ const EmployeeTaskHome = () => {
                                     flexDirection: 'row',
                                     borderRadius: 4
                                 }}
-                                    onPress={() => handleIncludeTravel('Yes')}
+                                    onPress={() => handleIncludeTravel('Y')}
                                 >
-                                    <Text style={[styles.defaultOption, includeTravel === 'Yes' && styles.selectedOption]}></Text>
+                                    <Text style={[styles.defaultOption, includeTravel === 'Y' && styles.selectedOption]}></Text>
                                     <Text style={{ color: 'white', marginLeft: 12 }}>Yes</Text>
                                 </TouchableOpacity>
 
@@ -384,9 +543,9 @@ const EmployeeTaskHome = () => {
                                     flexDirection: 'row',
                                     borderRadius: 4
                                 }}
-                                    onPress={() => handleIncludeTravel('No')}
+                                    onPress={() => handleIncludeTravel('N')}
                                 >
-                                    <Text style={[styles.defaultOption, includeTravel === 'No' && styles.selectedOption]}></Text>
+                                    <Text style={[styles.defaultOption, includeTravel === 'N' && styles.selectedOption]}></Text>
                                     <Text style={{ color: 'white', marginLeft: 12 }}>No</Text>
                                 </TouchableOpacity>
                             </View>
@@ -485,7 +644,7 @@ const EmployeeTaskHome = () => {
                                     borderRadius: 4,
                                     paddingHorizontal: 4
                                 }}>
-                                    <TouchableOpacity onPress={() => setModalVisible(false)} style={{
+                                    <TouchableOpacity onPress={() => saveTask()} style={{
                                         margin: 4,
                                         color: 'white'
                                     }}>
